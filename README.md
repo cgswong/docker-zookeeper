@@ -1,5 +1,7 @@
 ## Zookeeper Docker
 
+[![Circle CI](https://circleci.com/gh/cgswong/docker-zookeeper/tree/master.svg?style=svg)](https://circleci.com/gh/cgswong/docker-zookeeper/tree/master)
+
 This is a highly configurable Dockerized [Apache Zookeeper](http://zookeeper.apache.org/) image. There is a published version on [DockerHub](https://registry.hub.docker.com/u/cgswong/zookeeper/) using the automated build process.
 
 ## How to use this image
