@@ -2,7 +2,7 @@
 
 FROM gliderlabs/alpine:3.1
 
-ENV ZK_VERSION %%VERSION%%
+ENV ZK_VERSION 3.5.0
 ENV ZK_USER zookeeper
 ENV ZK_GROUP zookeeper
 ENV ZK_DIR /var/lib/zookeper

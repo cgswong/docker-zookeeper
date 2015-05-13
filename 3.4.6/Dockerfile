@@ -14,7 +14,7 @@ ENV JAVA_VERSION_BUILD 14
 ENV JAVA_HOME /usr/local/java/jdk
 ENV PATH $PATH:$JAVA_HOME/bin
 
-ADD ./src /
+ADD zkStart.sh /usr/local/bin/zkStart.sh
 
 RUN apk --update add \
       curl \
