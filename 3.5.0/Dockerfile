@@ -29,7 +29,7 @@ RUN apk --update add \
     mkdir -p ${JAVA_BASE} /opt &&\
     tar zxf /tmp/jdk-${JAVA_VERSION_MAJOR}u${JAVA_VERSION_MINOR}-linux-x64.tar.gz -C ${JAVA_BASE} &&\
     ln -s ${JAVA_BASE}/jdk1.${JAVA_VERSION_MAJOR}.0_${JAVA_VERSION_MINOR} ${JAVA_BASE}/jdk &&\
-    curl --insecure --silent --show-error --location http://mirrors.sonic.net/apache/zookeeper/current/zookeeper-${ZK_VERSION}.tar.gz | tar -xzf - -C /opt &&\
+    curl --insecure --silent --show-error --location http://mirrors.sonic.net/apache/zookeeper/zookeeper-${ZK_VERSION}/zookeeper-${ZK_VERSION}.tar.gz | tar -xzf - -C /opt &&\
     ln -s /opt/zookeeper-${ZK_VERSION} $ZK_HOME &&\
     rm -rf /tmp/* &&\
 #    groupadd -r $ZK_GROUP &&\
