@@ -5,7 +5,7 @@ FROM gliderlabs/alpine:3.1
 ENV ZK_VERSION %%VERSION%%
 ENV ZK_USER zookeeper
 ENV ZK_GROUP zookeeper
-ENV ZK_DIR /var/lib/zookeper
+ENV ZK_DIR /var/lib/zookeeper
 ENV ZK_HOME /opt/zookeeper
 
 ENV JAVA_VERSION_MAJOR 8
@@ -34,7 +34,7 @@ RUN apk --update add \
     rm -rf /tmp/* &&\
 #    groupadd -r $ZK_GROUP &&\
 #    useradd -c "Zookeeper" -d $ZK_DIR -g $ZK_GROUP -M -r -s /sbin/nologin $ZK_USER &&\
-    mkdir -p $ZK_DIR &&\
+    mkdir -p $ZK_DIR/{data,log} &&\
 #    chown -R $ZK_USER:$ZK_GROUP $ZK_DIR &&\
     chmod +x /usr/local/bin/zkStart.sh
 

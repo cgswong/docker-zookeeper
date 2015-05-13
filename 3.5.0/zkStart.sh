@@ -1,14 +1,15 @@
 #! /usr/bin/env bash
 
 ZK_CFG_FILE=/opt/zookeeper/conf/zoo.cfg
-ZK_DIR=/var/lib/zookeeper
+ZK_DATA_DIR=/var/lib/zookeeper/data
+ZK_LOG_DIR=/var/lib/zookeeper/log
 ZK_USER=zookeeper
 
 # Fail hard and fast
 set -eo pipefail
 
 ZK_ID=${ZK_ID:-1}
-echo "ZK_ID=$ZK_ID" && echo $ZK_ID > $ZK_DIR/myid
+echo "ZK_ID=$ZK_ID" && echo $ZK_ID > $ZK_DATA_DIR/myid
 
 ZK_TICK_TIME=${ZK_TICK_TIME:-2000}
 echo "tickTime=${ZK_TICK_TIME}" | tee -a $ZK_CFG_FILE
@@ -19,7 +20,8 @@ echo "initLimit=${ZK_INIT_LIMIT}" | tee -a $ZK_CFG_FILE
 ZK_SYNC_LIMIT=${ZK_SYNC_LIMIT:-2}
 echo "syncLimit=${$ZK_SYNC_LIMIT}" | tee -a $ZK_CFG_FILE
 
-echo "dataDir=${ZK_DIR}" | tee -a $ZK_CFG_FILE
+echo "dataDir=${ZK_DATA_DIR}" | tee -a $ZK_CFG_FILE
+echo "dataLogDir=${ZK_LOG_DIR}" | tee -a $ZK_CFG_FILE
 echo "clientPort=2181" | tee -a $ZK_CFG_FILE
 
 ZK_AUTOPURGE_SNAP_RETAIN_COUNT=${ZK_AUTOPURGE_SNAP_RETAIN_COUNT:-3}

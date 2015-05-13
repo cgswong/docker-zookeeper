@@ -14,7 +14,7 @@ The container can be configured via environment variables:
 | ZK_AUTOPURGE_SNAP_RETAIN_COUNT | autopurge.snapRetainCount | 3       |
 | ZK_AUTOPURGE_PURGE_INTERVAL    | autopurge.purgeInterval   | 0       |
 
-The data directory, `/var/lib/zookeeper`, is exposed for mounting to your local host. This facilitates using external storage for data, snapshots and the transaction logs. The configuration directory, `/opt/zookeeper/conf`, is also exposed for mounting such that you can use your own configuration file (and also take advantage of variable substitution).
+The data directory, `/var/lib/zookeeper`, is exposed for mounting to your local host. This facilitates using external storage for data (`/var/lib/zookeeper/data`), snapshots and the transaction logs (`/var/lib/zookeeper/logs`). The configuration directory, `/opt/zookeeper/conf`, is also exposed for mounting such that you can use your own configuration file (and also take advantage of variable substitution).
 
 ### Standalone mode
 If you are happy with the defaults, just run the container to get Zookeeper in standalone mode:
