@@ -14,6 +14,7 @@ dependencies:
 test:
   override:
     - docker run -d --rm --name zk --publish 2181:2181 cgswong/zookeeper:%%VERSION%%; sleep 10
+    - echo ruok | ncat localhost 2181
 
 deployment:
   hub:
