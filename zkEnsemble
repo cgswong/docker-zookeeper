@@ -1,0 +1,148 @@
+#! /usr/bin/env bash
+# #################################################
+# DESC: Setup Zookeeper ensemble within etcd for
+#       bootstrapping and dynamic reconfiguration.
+# #################################################
+
+# Fail hard and fast
+set -eo pipefail
+
+# Set values
+pkg=${0##*/}
+version="0.1.0"
+pkg_path=$(cd $(dirname $0); pwd -P)
+host=$(hostname)
+logfile="$pkg_path/$pkg.log"
+
+validzkID="^[1-5]$"
+validIP="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+validHostname="^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$"
+
+err_general=0
+err_file=1
+err_option=2
+err_format=3
+
+DIR_PREFIX="/services/zk/"
+KEY_PREFIX="ZOOKEEPER_SERVER_"
+
+# Set colors
+red=$(tput setaf 1)
+green=$(tput setaf 2)
+yellow=$(tput setaf 3)
+blue=$(tput setaf 4)
+purple=$(tput setaf 5)
+cyan=$(tput setaf 6)
+white=$(tput setaf 7)
+reset=$(tput sgr0)
+
+msg() {
+  [[ $quiet ]] && return
+  message="$2"
+  if [[ "$1" == "INFO" || "$1" == "DEBUG" ]]; then
+    pref="----"
+    if [[ $2 ]]; then
+        pref="${1:0:5}"
+        shift
+    fi
+    echo "${yellow}[${cyan}$pref${yellow}]$reset $message"
+  elif [[ "$1" == "ERR" ]]; then
+    echo "${yellow}[${red}ERR${yellow}]$reset $message"
+  fi
+  echo "$(date +'%b %d %T') $host $pkg: $message" >> $logfile
+}
+
+usage() {
+cat <<EOM
+
+$pkg v${version}
+
+Create, and update Zookeeper ensemble using a KV backend (Etcd). To update an existing
+ensemble just specify the ensemble name and all the members (same as create).
+
+Usage: $pkg [OPTIONS] [ARGS]
+
+Options:
+  -h,--help               Output help (this message)
+  -v,--version            Output version
+  -d,--debug              Debug mode (overrides quiet mode)
+  -q,--quiet              Do not show any message output
+  -n=,--name=[ENSEMBLE]    Name of the ensemble to create/update.
+
+Arguments:
+  "[ZK_ID1:ZK_HOST1 ZK_ID2:ZK_HOST2 ... ZK_IDn:ZK_HOSTn]"
+      Listing of all ensemble members (1 to 5), each separated by space in the format "ZK_ID:ZK_HOST/IP".
+      For example, a 3 node ensemble would be "1:172.17.8.101 2:172.17.8.102 3:172.17.8.103".
+
+EOM
+}
+
+validateMembers() {
+  zkMembers=$1
+  for member in $zkMembers; do
+    [[ $debug ]] && msg DEBUG "ZK member: $member"
+    zkID=$(echo "$member" | cut -d':' -f1)
+    [[ $debug ]] && msg DEBUG "ZK ID: $zkID"
+    if [[ ! $zkID =~ $validzkID ]]; then
+      msg ERR "Invalid ZK ID format or range: $zkID"
+      exit $err_format
+    fi
+    zkHost=$(echo "$member" | cut -d':' -f2)
+    [[ $debug ]] && msg DEBUG "ZK Host: $zkHost"
+    if [[ ! $zkHost =~ $validIP && ! $zkHost =~ $validHostname ]]; then
+      msg ERR "Invalid ZK host format: $zkHost"
+      exit $err_format
+    fi
+  done
+}
+
+# Process command line
+for arg in "$@"; do
+  if test -n "$prev_arg"; then
+    eval "$prev_arg=\$arg"
+    prev_arg=
+  fi
+
+  case "$arg" in
+      -*=*) optarg=`echo "$arg" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+      *) optarg= ;;
+  esac
+
+  case $arg in
+    -h | --help)
+      usage && exit 0
+      ;;
+    -v | --version)
+      echo "$pkg v${version}" && exit 0
+      ;;
+    -q | --quiet)
+      quiet=1
+      ;;
+    -d | --debug)
+      debug=1
+      ;;
+    -n | --name )
+      prev_arg=name
+      ;;
+    -n=* | --name=*)
+      DIR_NAME="$optarg"
+      DIR_KEY=${DIR_PREFIX}/${DIR_NAME}
+      [[ $debug ]] && msg DEBUG "KV directory name: $DIR_NAME"
+      ;;
+    -*)
+      msg ERR "Unknown option: $arg"
+      usage && exit $err_general
+      ;;
+    *)
+      zkarg=$arg
+      [[ $debug ]] && msg DEBUG "ZK members: $zkarg"
+      validateMembers $zkarg
+      for zkmember in $zkarg; do
+        ZK_ID=$(echo "$zkmember" | cut -d':' -f1)
+        ZK_HOST=$(echo "$zkmember" | cut -d':' -f2)
+        etcdctl set ${DIR_KEY}/${KEY_PREFIX}${ZK_ID} ${ZK_HOST} &>/dev/null
+        status=$? && msg INFO "Setting etcd KV status: $status"
+      done
+      ;;
+  esac
+done

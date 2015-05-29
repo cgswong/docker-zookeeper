@@ -1,0 +1,35 @@
+[Unit]
+Description=Zookeeper service %i
+
+Requires=docker.service
+After=docker.service
+
+[Service]
+TimeoutStartSec=10m
+Restart=always
+RestartSec=5s
+
+ExecStartPre=-/usr/bin/docker kill %p-%i
+ExecStartPre=-/usr/bin/docker rm %p-%i
+ExecStartPre=/usr/bin/docker pull cgswong/zookeeper:latest
+
+ExecStart=/usr/bin/bash -c "\
+  zk_cluster=$(for members in $(etcdctl ls /services/zk/ensemble); do \
+    zkKey=$(echo $members | cut -d'/' -f5) ;\
+    zkHost=$(etcdctl get $members) ;\
+    echo \"--env $zkKey=$zkHost\" ;\
+  done | paste -s -d' ') ;\
+  /usr/bin/docker run --name %p-%i \
+    --publish 2181:2181 --publish 2888:2888 --publish 3888:3888 \
+    --env ZK_ID=%i \
+    $zk_cluster \
+    cgswong/zookeeper:latest"
+
+ExecStop=-/usr/bin/docker stop %p-%i
+ExecStop=-/usr/bin/docker kill %p-%i
+ExecStop=-/usr/bin/docker rm %p-%i
+
+[X-Fleet]
+Conflicts=%p@*.service
+MachineMetadata=zk=%i
+
