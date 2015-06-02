@@ -1,7 +1,4 @@
 ## Zookeeper Docker
-
-[![Circle CI](https://circleci.com/gh/cgswong/docker-zookeeper/tree/master.svg?style=svg)](https://circleci.com/gh/cgswong/docker-zookeeper/tree/master)
-
 This is a highly configurable Dockerized [Apache Zookeeper](http://zookeeper.apache.org/) image. There is a published version on [DockerHub](https://registry.hub.docker.com/u/cgswong/zookeeper/) using the automated build process.
 
 ## How to use this image
@@ -54,3 +51,4 @@ If you have any problems with or questions about this image, please contact me t
 You are invited to contribute new features, fixes, or updates, large or small; I'm always thrilled to receive pull requests, and I'll do my best to process them as fast as I can.
 
 Before you start to code, I recommend discussing your plans through a [GitHub issue](https://github.com/cgswong/docker-zookeeper/issues), especially for more ambitious contributions. This gives other contributors a chance to point you in the right direction, give you feedback on your design, and help you find out if someone else is working on the same thing.
+
