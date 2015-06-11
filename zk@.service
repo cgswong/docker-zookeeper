@@ -9,7 +9,6 @@ TimeoutStartSec=10m
 Restart=always
 RestartSec=5s
 
-ExecStartPre=-/usr/bin/docker kill %p-%i
 ExecStartPre=-/usr/bin/docker rm %p-%i
 ExecStartPre=/usr/bin/docker pull cgswong/zookeeper:latest
 
@@ -25,9 +24,8 @@ ExecStart=/usr/bin/bash -c "\
     $zk_cluster \
     cgswong/zookeeper:latest"
 
-ExecStop=-/usr/bin/docker stop %p-%i
-ExecStop=-/usr/bin/docker kill %p-%i
-ExecStop=-/usr/bin/docker rm %p-%i
+ExecStop=/usr/bin/docker stop %p-%i
+ExecStopPost=-/usr/bin/docker rm %p-%i
 
 [X-Fleet]
 Conflicts=%p@*.service
