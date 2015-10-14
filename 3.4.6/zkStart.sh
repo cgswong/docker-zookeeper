@@ -18,7 +18,7 @@ ZK_INIT_LIMIT=${ZK_INIT_LIMIT:-5}
 echo "initLimit=${ZK_INIT_LIMIT}" | tee -a $ZK_CFG_FILE
 
 ZK_SYNC_LIMIT=${ZK_SYNC_LIMIT:-2}
-echo "syncLimit=${$ZK_SYNC_LIMIT}" | tee -a $ZK_CFG_FILE
+echo "syncLimit=${ZK_SYNC_LIMIT}" | tee -a $ZK_CFG_FILE
 
 echo "dataDir=${ZK_DATA_DIR}" | tee -a $ZK_CFG_FILE
 echo "dataLogDir=${ZK_LOG_DIR}" | tee -a $ZK_CFG_FILE
