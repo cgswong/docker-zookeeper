@@ -1,44 +1,48 @@
 #! /usr/bin/env bash
 
-ZK_CFG_FILE=/opt/zookeeper/conf/zoo.cfg
-ZK_DATA_DIR=/var/lib/zookeeper/data
-ZK_LOG_DIR=/var/lib/zookeeper/log
-ZK_USER=zookeeper
+: ${ZK_DIR:-"/var/lib/zookeeper"}
+ZK_CFG_FILE=${ZK_DIR}/zoo.cfg
 
-# Fail hard and fast
-set -eo pipefail
+zk_dataDir=${ZK_DIR}/data
+zk_dataLogDir=${ZK_DIR}/log
 
-ZK_ID=${ZK_ID:-1}
-echo "ZK_ID=$ZK_ID" && echo $ZK_ID > $ZK_DATA_DIR/myid
+: ${zk_id:-1}
+: ${zk_tickTime:-2000}
+: ${zk_initLimit:-5}
+: ${zk_syncLimit:-2}
+: ${zk_clientPort:-2181}
+: ${zk_maxClientCnxns:-100}
+: ${zk_autopurge.purgeInterval:-12}
 
-ZK_TICK_TIME=${ZK_TICK_TIME:-2000}
-echo "tickTime=${ZK_TICK_TIME}" | tee -a $ZK_CFG_FILE
+export zk_id
+export zk_tickTime
+export zk_initLimit
+export zk_syncLimit
+export zk_clientPort
+export zk_maxClientCnxns
+export zk_autopurge.purgeInterval
 
-ZK_INIT_LIMIT=${ZK_INIT_LIMIT:-5}
-echo "initLimit=${ZK_INIT_LIMIT}" | tee -a $ZK_CFG_FILE
+# Download the config file, if given a URL
+if [ ! -z "$zk_cfg_url" ]; then
+  echo "$(date +"[%F %X,000]")[INFO ][action.admin.container   ] Downloading ZK config file from ${zk_cfg_url}"
+  curl -sSL ${zk_cfg_url} --output ${ZK_CFG_FILE}
+  if [ $? -ne 0 ]; then
+    echo "$(date +"[%F %X,000]")[ERROR][action.admin.container   ] Failed to download ${zk_cfg_url}, exiting."
+    exit 1
+  fi
+fi
 
-ZK_SYNC_LIMIT=${ZK_SYNC_LIMIT:-2}
-echo "syncLimit=${ZK_SYNC_LIMIT}" | tee -a $ZK_CFG_FILE
+# Set ZooKeeper ID
+echo $zk_id > $zk_dataDir/myid
 
-echo "dataDir=${ZK_DATA_DIR}" | tee -a $ZK_CFG_FILE
-echo "dataLogDir=${ZK_LOG_DIR}" | tee -a $ZK_CFG_FILE
-echo "clientPort=2181" | tee -a $ZK_CFG_FILE
-
-ZK_AUTOPURGE_SNAP_RETAIN_COUNT=${ZK_AUTOPURGE_SNAP_RETAIN_COUNT:-3}
-echo "autopurge.snapRetainCount=${ZK_AUTOPURGE_SNAP_RETAIN_COUNT}" | tee -a $ZK_CFG_FILE
-
-ZK_AUTOPURGE_PURGE_INTERVAL=${ZK_AUTOPURGE_PURGE_INTERVAL:-0}
-echo "autopurge.purgeInterval=${ZK_AUTOPURGE_PURGE_INTERVAL}" | tee -a $ZK_CFG_FILE
-
-for VAR in `env`; do
-  if [[ $VAR =~ ^ZK_SERVER_[0-9]+= ]]; then
-    SERVER_ID=`echo "$VAR" | sed -r "s/ZK_SERVER_(.*)=.*/\1/"`
-    SERVER_IP=`echo "$VAR" | sed 's/.*=//'`
-    if [ "${SERVER_ID}" = "${ZK_ID}" ]; then
-      echo "server.${SERVER_ID}=0.0.0.0:2888:3888" | tee -a $ZK_CFG_FILE
-    else
-      echo "server.${SERVER_ID}=${SERVER_IP}:2888:3888" | tee -a $ZK_CFG_FILE
-    fi
+# Process env variables
+for var in $(env | grep -v '^zk_cfg_' | grep '^zk_' | sort); do
+  key=$(echo $var | sed -r 's/zk_(.*)=.*/\1/g')
+  value=$(echo $var | sed -r 's/.*=(.*)/\1/g')
+  if egrep -q "(^|^#)$key" $ZK_CFG_FILE; then
+    sed -r -i "s@(^|^#)($key)=(.*)@\2=${!value}@g" $ZK_CFG_FILE
+  else
+  echo "${key}=${value}" >> ${ZK_CFG_FILE}
   fi
 done
 
