@@ -1,1 +1,0 @@
-Docker image for Apache Zookeeper (~396 MB).

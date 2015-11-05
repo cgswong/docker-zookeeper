@@ -1,15 +1,11 @@
 #! /usr/bin/env bash
-# #################################################
-# DESC: Setup Zookeeper ensemble within etcd for
-#       bootstrapping and dynamic reconfiguration.
-# #################################################
+# Setup Zookeeper ensemble within etcd for bootstrapping and dynamic reconfiguration.
 
 # Fail hard and fast
 set -eo pipefail
 
 # Set values
 pkg=${0##*/}
-version="0.1.0"
 pkg_path=$(cd $(dirname $0); pwd -P)
 host=$(hostname)
 logfile="$pkg_path/$pkg.log"
@@ -23,8 +19,8 @@ err_file=1
 err_option=2
 err_format=3
 
-DIR_PREFIX="/services/zk/"
-KEY_PREFIX="ZOOKEEPER_SERVER_"
+DIR_PREFIX="/svc/zk/"
+KEY_PREFIX="server."
 
 # Set colors
 red=$(tput setaf 1)
@@ -55,9 +51,9 @@ msg() {
 usage() {
 cat <<EOM
 
-$pkg v${version}
+$pkg
 
-Create, and update Zookeeper ensemble using a KV backend (Etcd). To update an existing
+Create, and update Zookeeper ensemble using a KV backend (etcd). To update an existing
 ensemble just specify the ensemble name and all the members (same as create).
 
 Usage: $pkg [OPTIONS] [ARGS]
