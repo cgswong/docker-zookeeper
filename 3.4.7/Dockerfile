@@ -1,7 +1,7 @@
 FROM cgswong/java:openjre8
 MAINTAINER Stuart Wong <cgs.wong@gmail.com>
 
-ENV ZK_VERSION %%VERSION%%
+ENV ZK_VERSION 3.4.7
 ENV ZK_USER zookeeper
 ENV ZK_GROUP zookeeper
 ENV ZOO_DIR /var/lib/zookeeper

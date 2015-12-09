@@ -7,18 +7,14 @@ dependencies:
     - "~/docker"
   override:
     - docker info
-    - if [ -e ~/docker/image.tar ]; then docker load --input ~/docker/image.tar; fi
-    - docker build -t cgswong/zookeeper:%%VERSION%% .
-    - mkdir -p ~/docker; docker save cgswong/zookeeper:%%VERSION%% > ~/docker/image.tar
+    - mkdir -p ~/docker
 
 test:
   override:
-    - docker run -d --rm --name zk --publish 2181:2181 cgswong/zookeeper:%%VERSION%%; sleep 10
-    - echo ruok | ncat localhost 2181
+    - ~/${CIRCLE_PROJECT_REPONAME}/run-tests.sh
 
 deployment:
   hub:
     branch: master
     commands:
-      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASSWORD
-      - docker push cgswong/zookeeper:%%VERSION%%
+      - $DEPLOY

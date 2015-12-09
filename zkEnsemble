@@ -5,10 +5,14 @@
 set -eo pipefail
 
 # Set values
-pkg=${0##*/}
-pkg_path=$(cd $(dirname $0); pwd -P)
+pkg=${BASH_SOURCE##*/}
+pkg_root=$(dirname "${BASH_SOURCE}")
+
+# Source common script
+source "${pkg_root}/common.sh"
+
 host=$(hostname)
-logfile="$pkg_path/$pkg.log"
+logfile="${pkg_root}/${pkg}.log"
 
 validzkID="^[1-5]$"
 validIP="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
@@ -22,16 +26,6 @@ err_format=3
 DIR_PREFIX="/svc/zk/"
 KEY_PREFIX="server."
 
-# Set colors
-red=$(tput setaf 1)
-green=$(tput setaf 2)
-yellow=$(tput setaf 3)
-blue=$(tput setaf 4)
-purple=$(tput setaf 5)
-cyan=$(tput setaf 6)
-white=$(tput setaf 7)
-reset=$(tput sgr0)
-
 msg() {
   [[ $quiet ]] && return
   message="$2"
@@ -41,11 +35,11 @@ msg() {
         pref="${1:0:5}"
         shift
     fi
-    echo "${yellow}[${cyan}$pref${yellow}]$reset $message"
+    echo "${yellow}[${cyan}$pref${yellow}]${reset} ${message}"
   elif [[ "$1" == "ERR" ]]; then
-    echo "${yellow}[${red}ERR${yellow}]$reset $message"
+    echo "${yellow}[${red}ERR${yellow}]${reset} ${message}"
   fi
-  echo "$(date +'%b %d %T') $host $pkg: $message" >> $logfile
+  echo "$(date +'%b %d %T') ${host} ${pkg}: ${message}" >> $logfile
 }
 
 usage() {
@@ -75,19 +69,19 @@ EOM
 
 validateMembers() {
   zkMembers=$1
-  for member in $zkMembers; do
-    [[ $debug ]] && msg DEBUG "ZK member: $member"
-    zkID=$(echo "$member" | cut -d':' -f1)
-    [[ $debug ]] && msg DEBUG "ZK ID: $zkID"
-    if [[ ! $zkID =~ $validzkID ]]; then
-      msg ERR "Invalid ZK ID format or range: $zkID"
-      exit $err_format
+  for member in ${zkMembers}; do
+    [[ ${debug} ]] && msg DEBUG "ZK member: ${member}"
+    zkID=$(echo "${member}" | cut -d':' -f1)
+    [[ ${debug} ]] && msg DEBUG "ZK ID: ${zkID}"
+    if [[ ! ${zkID} =~ $validzkID ]]; then
+      msg ERR "Invalid ZK ID format or range: ${zkID}"
+      exit ${err_format}
     fi
-    zkHost=$(echo "$member" | cut -d':' -f2)
-    [[ $debug ]] && msg DEBUG "ZK Host: $zkHost"
-    if [[ ! $zkHost =~ $validIP && ! $zkHost =~ $validHostname ]]; then
-      msg ERR "Invalid ZK host format: $zkHost"
-      exit $err_format
+    zkHost=$(echo "${member}" | cut -d':' -f2)
+    [[ ${debug} ]] && msg DEBUG "ZK Host: ${zkHost}"
+    if [[ ! ${zkHost} =~ ${validIP} && ! ${zkHost} =~ ${validHostname} ]]; then
+      msg ERR "Invalid ZK host format: ${zkHost}"
+      exit ${err_format}
     fi
   done
 }

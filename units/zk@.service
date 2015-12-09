@@ -8,26 +8,20 @@ After=docker.service
 TimeoutStartSec=10m
 Restart=always
 RestartSec=5s
-
-ExecStartPre=-/usr/bin/docker rm %p-%i
-ExecStartPre=/usr/bin/docker pull cgswong/zookeeper:latest
-
+Environment="DOCKER_IMAGE=cgswong/zookeeper:latest"
+ExecStartPre=/bin/sh -c "docker inspect %p &>/dev/null && docker rm -f %p || true"
+ExecStartPre=/usr/bin/docker pull ${DOCKER_IMAGE}
 ExecStart=/usr/bin/bash -c "\
   zk_cluster=$(for members in $(etcdctl ls /services/zk/ensemble); do \
-    zkKey=$(echo $members | cut -d'/' -f5) ;\
-    zkHost=$(etcdctl get $members) ;\
-    echo \"--env $zkKey=$zkHost\" ;\
+    zkKey=$(echo ${members} | cut -d'/' -f5) ;\
+    zkHost=$(etcdctl get ${members}) ;\
+    echo \"--env ${zkKey}=${zkHost}\" ;\
   done | paste -s -d' ') ;\
-  /usr/bin/docker run --name %p-%i \
-    --publish 2181:2181 --publish 2888:2888 --publish 3888:3888 \
-    --env ZK_ID=%i \
+  /usr/bin/docker run --name %p-%i -p 2181:2181 -p 2281:2281 -p 2888:2888 -p 3888:3888 -p 9001:9001 -e zk_id=%i
     $zk_cluster \
-    cgswong/zookeeper:latest"
-
-ExecStop=/usr/bin/docker stop %p-%i
-ExecStopPost=-/usr/bin/docker rm %p-%i
+    ${DOCKER_IMAGE}"
+ExecStop=-/usr/bin/docker stop %p-%i
 
 [X-Fleet]
 Conflicts=%p@*.service
 MachineMetadata=zk=%i
-
