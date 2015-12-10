@@ -5,13 +5,13 @@ pid=0
 trap 'shutdown_handler' SIGTERM SIGINT
 
 # Setup environment and variables
-ZOO_DIR="/var/lib/zookeeper"
-ZOOCFGDIR="/opt/zookeeper/conf" ; export ZOOCFGDIR
-ZOOCFG="${ZOOCFGDIR}/zoo.cfg" ; export ZOOCFG
+ZK_BASE_DATADIR="/var/lib/zookeeper"
+ZK_CFGDIR="/opt/zookeeper/conf" ; export ZK_CFGDIR
+ZOOCFG="${ZK_CFGDIR}/zoo.cfg" ; export ZOOCFG
 JMXPORT=9001 ; export JMXPORT
 
-zk_dataDir=${ZOO_DIR}/data
-zk_dataLogDir=${ZOO_DIR}/log
+zk_dataDir=${ZK_BASE_DATADIR}/data
+zk_dataLogDir=${ZK_BASE_DATADIR}/log
 
 : ${zk_id:=1}
 : ${zk_tickTime:=5000}
