@@ -23,30 +23,30 @@ shutdown_handler() {
 }
 
 # Setup environment and variables
+: ${zk_autopurge_purgeInterval:=12}
+: ${zk_clientPort:=2181}
+: ${zk_id:=1}
+: ${zk_initLimit:=5}
+: ${zk_maxClientCnxns:=100}
+: ${zk_syncLimit:=2}
+: ${zk_tickTime:=5000}
 ZK_BASE_DATADIR="/var/lib/zookeeper"
-ZOOCFGDIR="/opt/zookeeper/conf" ; export ZOOCFGDIR
-ZOOCFG="${ZOOCFGDIR}/zoo.cfg" ; export ZOOCFG
-
+ZOOCFG="zoo.cfg"
+ZOOCFGDIR="/opt/zookeeper/conf"
 zk_dataDir=${ZK_BASE_DATADIR}/data
 zk_dataLogDir=${ZK_BASE_DATADIR}/log
 
-: ${zk_id:=1}
-: ${zk_tickTime:=5000}
-: ${zk_initLimit:=5}
-: ${zk_syncLimit:=2}
-: ${zk_clientPort:=2181}
-: ${zk_maxClientCnxns:=100}
-: ${zk_autopurge_purgeInterval:=12}
-
+export ZOOCFG
+export ZOOCFGDIR
+export zk_autopurge_purgeInterval
+export zk_clientPort
 export zk_dataDir
 export zk_dataLogDir
 export zk_id
-export zk_tickTime
 export zk_initLimit
-export zk_syncLimit
-export zk_clientPort
 export zk_maxClientCnxns
-export zk_autopurge_purgeInterval
+export zk_syncLimit
+export zk_tickTime
 
 # Download the config file, if given a URL
 if [ ! -z "${zk_cfg_url}" ]; then
@@ -74,7 +74,7 @@ cat ${ZOOCFG} | log
 
 # if `docker run` first argument start with `--` the user is passing launcher arguments
 if [[ "$1" == "-"* || -z $1 ]]; then
-  exec /opt/zookeeper/bin/zkServer.sh start-foreground ${ZOOCFG} "$@" &
+  exec /opt/zookeeper/bin/zkServer.sh start-foreground ${ZOOCFGDIR}/${ZOOCFG} "$@" &
   pid=$!
   log "[INFO] Started with PID: ${pid}"
   wait ${pid}
