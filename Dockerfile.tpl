@@ -6,6 +6,7 @@ ENV ZK_USER zookeeper
 ENV ZK_GROUP zookeeper
 ENV ZK_BASE_DATADIR /var/lib/zookeeper
 ENV ZK_BINDIR /opt/zookeeper
+ENV JMXPORT 12181
 
 ADD zkStart.sh /usr/local/bin/zkStart.sh
 

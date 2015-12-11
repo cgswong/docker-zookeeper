@@ -51,9 +51,9 @@ export zk_tickTime
 # Download the config file, if given a URL
 if [ ! -z "${zk_cfg_url}" ]; then
   log "[INFO] Downloading ZK config file from ${zk_cfg_url}"
-  curl -sSL ${zk_cfg_url} --output ${ZOOCFG} || die "Failed to download ${zk_cfg_url}"
-elif [ ! -f ${ZOOCFG} ]; then
-  touch ${ZOOCFG}
+  curl -sSL ${zk_cfg_url} --output ${ZOOCFGDIR}/${ZOOCFG} || die "Failed to download ${zk_cfg_url}"
+elif [ ! -f ${ZOOCFGDIR}/${ZOOCFG} ]; then
+  touch ${ZOOCFGDIR}/${ZOOCFG}
 fi
 
 # Set ZooKeeper ID
@@ -63,14 +63,37 @@ echo ${zk_id} > ${zk_dataDir}/myid
 for var in $(env | grep -v '^zk_cfg_' | grep '^zk_' | sort); do
   key=$(echo ${var} | sed -r 's/zk_(.*)=.*/\1/g' | tr '_' '.')
   value=$(echo ${var} | sed -r 's/.*=(.*)/\1/g')
-  if egrep -q "(^|^#)$key" ${ZOOCFG}; then
-    sed -r -i "s@(^|^#)($key)=(.*)@\2=${!value}@g" ${ZOOCFG}
+  if egrep -q "(^|^#)$key" ${ZOOCFGDIR}/${ZOOCFG}; then
+    sed -r -i "s@(^|^#)($key)=(.*)@\2=${!value}@g" ${ZOOCFGDIR}/${ZOOCFG}
   else
-    echo "${key}=${value}" >> ${ZOOCFG}
+    echo "${key}=${value}" >> ${ZOOCFGDIR}/${ZOOCFG}
   fi
 done
 
-cat ${ZOOCFG} | log
+# The built-in start scripts set the first three system properties here, but
+# we add two more to make remote JMX easier/possible to access in a Docker
+# environment:
+#
+#   1. RMI port - pinning this makes the JVM use a stable one instead of
+#      selecting random high ports each time it starts up.
+#   2. RMI hostname - normally set automatically by heuristics that may have
+#      hard-to-predict results across environments.
+#
+# These allow saner configuration for firewalls, EC2 security groups, Docker
+# hosts running in a VM with Docker Machine, etc. See:
+#
+# https://issues.apache.org/jira/browse/CASSANDRA-7087
+log "[INFO] Setting up JMX."
+if [ -z $KAFKA_JMX_OPTS ]; then
+  KAFKA_JMX_OPTS="-Dcom.sun.management.jmxremote=true"
+  KAFKA_JMX_OPTS="${KAFKA_JMX_OPTS} -Dcom.sun.management.jmxremote.authenticate=false"
+  KAFKA_JMX_OPTS="${KAFKA_JMX_OPTS} -Dcom.sun.management.jmxremote.ssl=false"
+  KAFKA_JMX_OPTS="${KAFKA_JMX_OPTS} -Dcom.sun.management.jmxremote.rmi.port=${JMXPORT}"
+  KAFKA_JMX_OPTS="${KAFKA_JMX_OPTS} -Djava.rmi.server.hostname=${JAVA_RMI_SERVER_HOSTNAME:-$(hostname -f)} "
+  export KAFKA_JMX_OPTS
+fi
+
+cat ${ZOOCFGDIR}/${ZOOCFG} | log
 
 # if `docker run` first argument start with `--` the user is passing launcher arguments
 if [[ "$1" == "-"* || -z $1 ]]; then

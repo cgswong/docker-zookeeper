@@ -47,7 +47,7 @@ main() {
   check-env
   setup
   test-status
-  cleanup
+  [ $? -eq 0 ] && cleanup
 }
 
 main
