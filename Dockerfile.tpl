@@ -25,8 +25,8 @@ RUN apk --update add \
 
 USER ${ZK_USER}
 
-# Expose client port (2188/tcp;2281/tcps), leader connection port (2888/tcp), leader election port (3888/tcp), JMX port (9000/tcp)
-EXPOSE 2181 2281 2888 3888 9001
+# Expose client port (2188/tcp;2281/tcps), leader connection port (2888/tcp), leader election port (3888/tcp)
+EXPOSE 2181 2281 2888 3888 ${JMXPORT}
 
 # Expose volumes
 VOLUME ["${ZK_BASE_DATADIR}","${ZK_BINDIR}/conf"]

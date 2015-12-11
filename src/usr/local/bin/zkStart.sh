@@ -4,11 +4,28 @@
 pid=0
 trap 'shutdown_handler' SIGTERM SIGINT
 
+# Write messages to screen
+log() {
+  echo "$(date +"[%F %X,000]") $(hostname) [action.admin.container] $1"
+}
+
+# Write exit failure messages to syslog and exit with failure code (i.e. non-zero)
+die() {
+  log "[FAIL] $1" && exit 1
+}
+
+shutdown_handler() {
+  # Handle Docker shutdown signals to allow correct exit codes upon container shutdown
+  log "[INFO] Requesting container shutdown..."
+  kill -SIGINT "${pid}"
+  log "[INFO] Container stopped."
+  exit 0
+}
+
 # Setup environment and variables
 ZK_BASE_DATADIR="/var/lib/zookeeper"
-ZK_CFGDIR="/opt/zookeeper/conf" ; export ZK_CFGDIR
-ZOOCFG="${ZK_CFGDIR}/zoo.cfg" ; export ZOOCFG
-JMXPORT=9001 ; export JMXPORT
+ZOOCFGDIR="/opt/zookeeper/conf" ; export ZOOCFGDIR
+ZOOCFG="${ZOOCFGDIR}/zoo.cfg" ; export ZOOCFG
 
 zk_dataDir=${ZK_BASE_DATADIR}/data
 zk_dataLogDir=${ZK_BASE_DATADIR}/log
@@ -31,21 +48,10 @@ export zk_clientPort
 export zk_maxClientCnxns
 export zk_autopurge_purgeInterval
 
-# Write messages to screen
-log() {
-  echo "$(date +"[%F %X,000]") $(hostname) [action.admin.container] $1"
-}
-
-# Write exit failure messages to syslog and exit with failure code (i.e. non-zero)
-die() {
-  log "[FAIL] $1" && exit 1
-}
-
 # Download the config file, if given a URL
 if [ ! -z "${zk_cfg_url}" ]; then
   log "[INFO] Downloading ZK config file from ${zk_cfg_url}"
-  curl -sSL ${zk_cfg_url} --output ${ZOOCFG} ||
-  [ $? -ne 0 ] && die "Failed to download ${zk_cfg_url}"
+  curl -sSL ${zk_cfg_url} --output ${ZOOCFG} || die "Failed to download ${zk_cfg_url}"
 elif [ ! -f ${ZOOCFG} ]; then
   touch ${ZOOCFG}
 fi
@@ -64,16 +70,10 @@ for var in $(env | grep -v '^zk_cfg_' | grep '^zk_' | sort); do
   fi
 done
 
-shutdown_handler() {
-  # Handle Docker shutdown signals to allow correct exit codes upon container shutdown
-  log "[INFO] Requesting container shutdown..."
-  kill -SIGINT "${pid}"
-  log "[INFO] Container stopped."
-  exit 0
-}
+cat ${ZOOCFG} | log
 
 # if `docker run` first argument start with `--` the user is passing launcher arguments
-if [[ "$1" == "--"* || -z $1 ]]; then
+if [[ "$1" == "-"* || -z $1 ]]; then
   exec /opt/zookeeper/bin/zkServer.sh start-foreground ${ZOOCFG} "$@" &
   pid=$!
   log "[INFO] Started with PID: ${pid}"
