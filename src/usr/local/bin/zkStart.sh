@@ -60,7 +60,7 @@ fi
 echo ${zk_id} > ${zk_dataDir}/myid
 
 # Process env variables
-for var in $(env | grep -v '^zk_cfg_' | grep '^zk_' | sort); do
+for var in $(env | grep '^zk_' | | grep -v '^zk_cfg_' | sort); do
   key=$(echo ${var} | sed -r 's/zk_(.*)=.*/\1/g' | tr '_' '.')
   value=$(echo ${var} | sed -r 's/.*=(.*)/\1/g')
   if egrep -q "(^|^#)$key" ${ZOOCFGDIR}/${ZOOCFG}; then
