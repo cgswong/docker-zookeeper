@@ -1,6 +1,6 @@
-## Zookeeper Docker
+## ZooKeeper Docker
 [![Circle CI](https://circleci.com/gh/cgswong/docker-zookeeper.svg?style=svg)](https://circleci.com/gh/cgswong/docker-zookeeper)
-This is a highly configurable Dockerized [Apache ZooK`eeper](http://zookeeper.apache.org/) image. There is a published version on [DockerHub](https://registry.hub.docker.com/u/cgswong/zookeeper/) using the automated build process.
+This is a highly configurable Dockerized [Apache ZooKeeper](http://zookeeper.apache.org/) image. There is a published version on [DockerHub](https://registry.hub.docker.com/u/cgswong/zookeeper/) using the automated build process.
 
 ## How to use this image
 The container can be configured via environment variables where any ZK property can be set after `zk_` with underscore instead of period ('.') used. For example:
