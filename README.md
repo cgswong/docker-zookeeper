@@ -5,7 +5,7 @@ This is a highly configurable Dockerized [Apache ZooKeeper](http://zookeeper.apa
 ## How to use this image
 The container can be configured via environment variables where any ZK property can be set after `zk_` with underscore instead of period ('.') used. For example:
 
-| Environment Variable           | Zookeeper Property        | Default |
+| Environment Variable           | ZooKeeper Property        | Default |
 | ------------------------------ | ------------------------- | -------:|
 | zk_tickTime                    | tickTime                  | 5000    |
 | zk_initLimit                   | initLimit                 | 5       |
@@ -21,10 +21,10 @@ The data directory, `/var/lib/zookeeper`, is exposed for mounting to your local 
 This image also provides for a remote properties file to be used, which will also be processed for variable substitution. To download a remote properties file, set the environment variable `zk_cfg_url` to the location of the file.
 
 ### Standalone mode
-If you are happy with the defaults, just run the container to get Zookeeper in standalone mode:
+If you are happy with the defaults, just run the container to get ZooKeeper in standalone mode:
 
 ```sh
-docker run --rm --name zk -p 2181:2181 cgswong/zookeeper:latest
+docker run --rm --name zk -p 2181:2181 cgswong/zookeeper
 ```
 
 ### Cluster mode
@@ -34,15 +34,15 @@ To run a cluster just set more `zk_server_X` environment variables, where `X` is
 docker run -d --name zk1 \
   -p 2181:2181 -p 2888:2888 -p 3888:3888 \
   -e zk_id=1 -e zk_server_1=172.17.8.101 -e zk_server_2=172.17.8.102 -e zk_server_3=172.17.8.103 \
-  cgswong/zookeeper:latest
+  cgswong/zookeeper
 docker run -d --name zk2 \
   --publish 2181:2181 --publish 2888:2888 --publish 3888:3888 \
   -e zk_id=2 -e zk_server_1=172.17.8.101 -e zk_server_2=172.17.8.102 -e zk_server_3=172.17.8.103 \
-  cgswong/zookeeper:latest
+  cgswong/zookeeper
 docker run -d --name zk3 \
   -p 2181:2181 -p 2888:2888 -p 3888:3888 \
   -e zk_id=3 -e zk_server_1=172.17.8.101 -e zk_server_2=172.17.8.102 -e zk_server_3=172.17.8.103 \
-  cgswong/zookeeper:latest
+  cgswong/zookeeper
 ```
 
 The above commands are run across 3 separate hosts. To form a cluster on a single host change the local port mappings to avoid collisions.
