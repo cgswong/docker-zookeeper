@@ -25,7 +25,8 @@ versions=( $(printf '%s\n' "${versions[@]}"|sort -V) )
 dlVersions=$(curl -sSL 'http://mirrors.sonic.net/apache/zookeeper/' | sed -rn 's!.*?>(zookeeper-)?([0-9]+\.[0-9]+\.[0-9]).*!\2!gp' | sort -V | uniq)
 for version in "${versions[@]}"; do
   echo "${yellow}Updating version: ${version}${reset}"
-  cp src/usr/local/bin/zkStart.sh "${version}/"
+  cp src/usr/local/bin/* "${version}/"
+  cp src/opt/zookeeper/conf/* "${version}/"
   sed -e 's/%%VERSION%%/'"$version"'/' < Dockerfile.tpl > "$version/Dockerfile"
 done
 echo "${green}Complete${reset}"
